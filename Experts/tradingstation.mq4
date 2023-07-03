@@ -25,6 +25,5 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {  
-    int currentHour = TimeHour(TimeCurrent());
-    Print("current hour: " + string(currentHour));
+    Print("zkouska voe");
 }
