@@ -11,31 +11,20 @@
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 
-#include <indicators.mqh>
-#include <TriggerFunctions.mqh>
 
-datetime LastActionTime = 0;
 
 int OnInit()
-  {
-//---
-
-//---
+{
    return(INIT_SUCCEEDED);
-  }
-//+------------------------------------------------------------------+
-//| Expert deinitialization function                                 |
-//+------------------------------------------------------------------+
+}
+
 void OnDeinit(const int reason)
-  {
-  
-  }
-//+------------------------------------------------------------------+
-//| Expert tick function                                             |
-//+------------------------------------------------------------------+
-void OnTick()
-  {  
-   // Comparing LastActionTime with the current starting time for the candle.
+{
 
 }
-//+------------------------------------------------------------------+
+
+void OnTick()
+{  
+    int currentHour = TimeHour(TimeCurrent());
+    Print("current hour: " + currentHour);
+}
