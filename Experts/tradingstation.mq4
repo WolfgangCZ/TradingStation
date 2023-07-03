@@ -11,7 +11,7 @@
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 
-
+#include <TradeManager.mqh>
 
 int OnInit()
 {
@@ -26,5 +26,5 @@ void OnDeinit(const int reason)
 void OnTick()
 {  
     int currentHour = TimeHour(TimeCurrent());
-    Print("current hour: " + currentHour);
+    Print("current hour: " + string(currentHour));
 }
