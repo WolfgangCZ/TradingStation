@@ -19,7 +19,7 @@ datetime LastActionTime = 0;
 int OnInit()
   {
 //---
-   
+
 //---
    return(INIT_SUCCEEDED);
   }
@@ -34,13 +34,8 @@ void OnDeinit(const int reason)
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
 void OnTick()
-  {
-  
+  {  
    // Comparing LastActionTime with the current starting time for the candle.
-   if (LastActionTime != Time[0])
-   {
-      // Code to execute once per bar.
-      LastActionTime = Time[0];
-   }
+
 }
 //+------------------------------------------------------------------+
