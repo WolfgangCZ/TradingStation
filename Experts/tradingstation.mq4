@@ -12,6 +12,11 @@
 //+------------------------------------------------------------------+
 
 #include <TradeManager.mqh>
+#include <PriceSeries.mqh>
+
+
+TradeManager tradeManager;
+
 
 int OnInit()
 {
@@ -25,5 +30,6 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {  
-    Print("zkouska voe");
+    tradeManager.member = 10;
+    Print("zkouska member: " + string(tradeManager.member));
 }
