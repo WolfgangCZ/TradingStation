@@ -12,24 +12,49 @@
 //+------------------------------------------------------------------+
 
 #include <TradeManager.mqh>
-#include <PriceSeries.mqh>
+#include <NumberSeries.mqh>
+#include <ConditionManager.mqh>
+    
+input double riskRewardRatio = 0.01;
+input double atrStopLossMultiplier = 2;
+input uint simpleMAPeriod = 5;
 
-
-TradeManager tradeManager;
-
+TradeManager* tradeManager;
+ConditionManager* conditionManager;
+NumberSeries* numberSeries;
+SimpleMA* simpleMA;
 
 int OnInit()
 {
-   return(INIT_SUCCEEDED);
+    simpleMA = new SimpleMA(simpleMAPeriod);
+    tradeManager = new TradeManager(riskRewardRatio, atrStopLossMultiplier, 111);
+    conditionManager = new ConditionManager();
+    //numberSeries = new NumberSeries();
+    return(INIT_SUCCEEDED);
 }
 
 void OnDeinit(const int reason)
 {
-
+    delete tradeManager;
+    delete conditionManager;
+    delete simpleMA;
 }
 
 void OnTick()
 {  
-    tradeManager.member = 10;
-    Print("zkouska member: " + string(tradeManager.member));
+    numberSeries = simpleMA;
+    //numberSeries = simpleMA;
+    conditionManager.IsPeak(simpleMA);
+    if(conditionManager.AllConditionsPassed())
+    {
+        Print("Condition passed for long trade");
+        tradeManager.OpenLongTrade();
+    }
+
+    conditionManager.IsValley(simpleMA);
+    if(conditionManager.AllConditionsPassed())
+    {
+        Print("Condition passed for short trade");
+        tradeManager.OpenShortTrade();
+    }    
 }
