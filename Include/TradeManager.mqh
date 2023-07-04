@@ -52,7 +52,6 @@ class TradeManager
             double atr = iATR(NULL,NULL,100,0);
             double stopLossPrice = NormalizeDouble(GetLongATRStopLossPrice(atrStopLoss*atr, Ask), Digits);
             double profitPrice = NormalizeDouble(GetShortATRStopLossPrice(atrStopLoss*atr, Ask), Digits);
-            Print("Entering long trade");
             tradeID = OrderSend(NULL, OP_BUY, 0.01, Ask, 10, stopLossPrice, profitPrice, "Long trade", magicNumber, 0, 0);
         }
         void OpenShortTrade()
@@ -60,7 +59,6 @@ class TradeManager
             double atr = iATR(NULL,NULL,100,0);
             double stopLossPrice = NormalizeDouble(GetShortATRStopLossPrice(atrStopLoss*atr, Bid), Digits);
             double profitPrice = NormalizeDouble(GetLongATRStopLossPrice(atrStopLoss*atr, Bid), Digits);
-            Print("Entering short trade");
             tradeID = OrderSend(NULL, OP_SELL, 0.01, Bid, 10, stopLossPrice, profitPrice, "Long trade", magicNumber, 0, 0);
         }
 

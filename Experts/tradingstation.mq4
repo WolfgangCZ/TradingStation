@@ -47,14 +47,12 @@ void OnTick()
     conditionManager.IsPeak(simpleMA);
     if(conditionManager.AllConditionsPassed())
     {
-        Print("Condition passed for long trade");
         tradeManager.OpenLongTrade();
     }
 
     conditionManager.IsValley(simpleMA);
     if(conditionManager.AllConditionsPassed())
     {
-        Print("Condition passed for short trade");
         tradeManager.OpenShortTrade();
     }    
 }
