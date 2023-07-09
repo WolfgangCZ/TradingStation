@@ -13,7 +13,6 @@ double GetPipValue();
 bool IsTradingAllowed();
 */
 
-
 //implementations - definitions
 double GetPipValue()
 {
