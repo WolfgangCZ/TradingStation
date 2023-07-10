@@ -28,6 +28,7 @@ SimpleMA* simpleMA;
 
 int OnInit()
 {
+    Print("EA initialized");
     simpleMA = new SimpleMA(simpleMAPeriod);
     tradeManager = new TradeManager(riskRewardRatio, atrStopLossMultiplier, userMagicNumber);
     conditionManager = new ConditionManager();
@@ -40,29 +41,51 @@ void OnDeinit(const int reason)
     delete tradeManager;
     delete conditionManager;
     delete simpleMA;
+    Print("EA deinitialized");
 }
 
 void OnTick()
 {  
+    Print("EA started");
+    ConditionCounter conditionCounter;
+    conditionCounter.totalConditions = 0;
+    conditionCounter.passedConditions = 0;
     numberSeries = simpleMA;
     
-    //LONG TRADES LOGIC
-
-    conditionManager.SlopeUp(simpleMA);
-    conditionManager.MaxOrdersReached(1);
-    if(conditionManager.AllConditionsPassed())
+    //CLOSE LONG TRADE LOGIC
+    conditionManager.SlopeUp(simpleMA, conditionCounter);
+    conditionManager.IsShortTradeOpen(userMagicNumber, conditionCounter);
+    if(conditionManager.AllConditionsPassed(conditionCounter))
     {
         tradeManager.CloseAllOpenTrades();
+    }
+
+    //CLOSE SHORT TRADE LOGIC
+    conditionManager.SlopeDown(simpleMA, conditionCounter);
+    conditionManager.IsLongTradeOpen(userMagicNumber, conditionCounter);
+    if(conditionManager.AllConditionsPassed(conditionCounter))
+    {
+        tradeManager.CloseAllOpenTrades();
+    }
+
+    //OPEN LONG TRADES LOGIC
+    conditionManager.SlopeUp(simpleMA, conditionCounter);
+    conditionManager.IsShortTradeOpen(userMagicNumber, conditionCounter);
+    // Print("long condition checked");
+    if(conditionManager.AllConditionsPassed(conditionCounter))
+    {
         tradeManager.OpenLongTrade();
     }
 
-    //SHORT TRADES LOGIC
-
-    conditionManager.SlopeDown(simpleMA);
-    conditionManager.MaxOrdersReached(1);
-    if(conditionManager.AllConditionsPassed())
+    //OPEN SHORT TRADES LOGIC
+    conditionManager.SlopeDown(simpleMA, conditionCounter);
+    conditionManager.IsLongTradeOpen(userMagicNumber, conditionCounter);
+    // Print("short condition checked");
+    if(conditionManager.AllConditionsPassed(conditionCounter))
     {
-        tradeManager.CloseAllOpenTrades();
         tradeManager.OpenShortTrade();
     }    
+
+
+
 }
