@@ -1,6 +1,6 @@
 
 template <typename T>
-void AppendElement(T &arr[], T element)
+void AppendElement(T &arr[], T &element)
 {
     int arrSize = ArraySize(arr);
     ArrayResize(arr, arrSize + 1);
@@ -26,7 +26,7 @@ void EraseElement(T &arr[], int pos)
 }
 
 template <typename T>
-void InsertElement(T &arr[],T element, int pos)
+void InsertElement(T &arr[],T &element, int pos)
 {
     int arrSize = ArraySize(arr);
 
