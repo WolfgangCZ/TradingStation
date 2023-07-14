@@ -2,8 +2,8 @@
 #property link      "https://wolfgangtechnologies.cz"
 #property strict
 
-#include <NumberSeries.mqh>
 #include <SuppResLevels.mqh>
+#include <NumberSeries.mqh>
 
 
 struct ConditionCounter

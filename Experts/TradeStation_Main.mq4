@@ -1,8 +1,3 @@
-//+------------------------------------------------------------------+
-//|                                                     EAtester.mq4 |
-//|                                                         Wolfgang |
-//|                                  https://wolfgangtechnologies.cz |
-//+------------------------------------------------------------------+
 #property copyright "Wolfgang"
 #property link      "https://wolfgangtechnologies.cz"
 #property version   "1.00"
@@ -11,81 +6,49 @@
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 
-#include <TradeManager.mqh>
-#include <NumberSeries.mqh>
-#include <ConditionManager.mqh>
-    
-input double riskRewardRatio = 0.01;
-input double atrStopLossMultiplier = 5;
-input uint simpleMAPeriod = 100;
+#include <TradeStation.mqh>
 
+//TODO how to propagate parameters to trade manager without declaring variables twice?? 
+//forward input manager to trademanager without declaring it in tradestation?????
+
+
+//base user inputs
+
+input double userRiskRewardRatio = 0.01;
+input double userAtrStopLossMultiplier = 5;
 input int userMagicNumber = 111;
+input int userBaseATR = 100;
 
-TradeManager* tradeManager;
-ConditionManager* conditionManager;
-NumberSeries* numberSeries;
-SimpleMA* simpleMA;
+//optional userinputs
+
+input uint userSimpleMAPeriod = 100;
+
+
+//implementation
+
+TradeStation *tradeStation;
+UserInputManager *userInputManager;
 
 int OnInit()
 {
-    Print("EA initialized");
-    simpleMA = new SimpleMA(simpleMAPeriod);
-    tradeManager = new TradeManager(riskRewardRatio, atrStopLossMultiplier, userMagicNumber);
-    conditionManager = new ConditionManager();
-    //numberSeries = new NumberSeries();
+    userInputManager = new UserInputManager();
+    userInputManager.atrSLMultiplier = userAtrStopLossMultiplier;
+    userInputManager.rewardRiskRatio = userRiskRewardRatio;
+    userInputManager.magicNumber = userMagicNumber;
+    userInputManager.baseATR = userBaseATR;
+    userInputManager.simpleMAPeriod = 200;
+
+    tradeStation = new TradeStation(userInputManager);
     return(INIT_SUCCEEDED);
 }
 
 void OnDeinit(const int reason)
 {
-    delete tradeManager;
-    delete conditionManager;
-    delete simpleMA;
-    Print("EA deinitialized");
+    delete tradeStation;
+    delete userInputManager;
 }
 
 void OnTick()
 {  
-    Print("EA started");
-    ConditionCounter conditionCounter;
-    conditionCounter.totalConditions = 0;
-    conditionCounter.passedConditions = 0;
-    numberSeries = simpleMA;
-    
-    //CLOSE LONG TRADE LOGIC
-    conditionManager.SlopeUp(simpleMA, conditionCounter);
-    conditionManager.IsShortTradeOpen(userMagicNumber, conditionCounter);
-    if(conditionManager.AllConditionsPassed(conditionCounter))
-    {
-        tradeManager.CloseAllOpenTrades();
-    }
-
-    //CLOSE SHORT TRADE LOGIC
-    conditionManager.SlopeDown(simpleMA, conditionCounter);
-    conditionManager.IsLongTradeOpen(userMagicNumber, conditionCounter);
-    if(conditionManager.AllConditionsPassed(conditionCounter))
-    {
-        tradeManager.CloseAllOpenTrades();
-    }
-
-    //OPEN LONG TRADES LOGIC
-    conditionManager.SlopeUp(simpleMA, conditionCounter);
-    conditionManager.IsShortTradeOpen(userMagicNumber, conditionCounter);
-    // Print("long condition checked");
-    if(conditionManager.AllConditionsPassed(conditionCounter))
-    {
-        tradeManager.OpenLongTrade();
-    }
-
-    //OPEN SHORT TRADES LOGIC
-    conditionManager.SlopeDown(simpleMA, conditionCounter);
-    conditionManager.IsLongTradeOpen(userMagicNumber, conditionCounter);
-    // Print("short condition checked");
-    if(conditionManager.AllConditionsPassed(conditionCounter))
-    {
-        tradeManager.OpenShortTrade();
-    }    
-
-
-
+    tradeStation.DoSomething();
 }

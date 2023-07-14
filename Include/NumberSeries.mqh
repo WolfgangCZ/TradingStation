@@ -5,6 +5,8 @@
 //numbers are meant in oposite direction aka third number is "visually" on the left and first number is "visually" on the right
 //this is because third number is third candle from current candle to the left, and first is last closed candle
 
+#include <UserInputManager.mqh>
+
 class NumberSeries
 {
     //EMA   
@@ -23,9 +25,10 @@ class NumberSeries
 class SimpleMA : public NumberSeries
 {   
     public:  
-        SimpleMA(uint inputPeriod)
+        SimpleMA(const UserInputManager *parameter)
         {
-            period = inputPeriod;
+            period = parameter.simpleMAPeriod;
+            Print("period: " + string(period));
         }      
 
         virtual void update() override
