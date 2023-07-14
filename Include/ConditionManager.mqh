@@ -3,9 +3,8 @@
 #property strict
 
 #include <NumberSeries.mqh>
+#include <SuppResLevels.mqh>
 
-//TODO cross threshold
-//TODO cross 
 
 struct ConditionCounter
 {
@@ -32,15 +31,19 @@ class ConditionManager
         bool CrossOver(NumberSeries* numbers, uint threshold);
         bool CrossOver(NumberSeries* numbers, uint threshold, ConditionCounter &counter);
         bool SlopeDown(NumberSeries* numbers);
-        bool SlopeDown(NumberSeries* numbers, ConditionCounter &counter);
+        bool SlopeDown(NumberSeries* numbers, ConditionCounter &counter);       
         bool SlopeUp(NumberSeries* numbers);
         bool SlopeUp(NumberSeries* numbers, ConditionCounter &counter);
         bool MaxOrdersReached(int maxOrders); //rework, this is dumb
-        bool NoTradeOpen(int magicNumber);
+        bool NoTradeOpen(int magicNumber); //rework or add IsSomeTradeOpen???? this is also dumb
         bool IsLongTradeOpen(int magicNumber);
         bool IsLongTradeOpen(int magicNumber, ConditionCounter &counter);
         bool IsShortTradeOpen(int magicNumber);
         bool IsShortTradeOpen(int magicNumber, ConditionCounter &counter);
+        //TODO two series numbers crossings
+        //TODO IsBeloWLevel(double minDistance, uint minLevelSignificance);
+        //TODO IsAboveLevel(double minDistance, uint minLevelSignificance);
+        //TODO
         bool AllConditionsPassed(ConditionCounter &counter);
         double PercentageConditionsPassed(ConditionCounter &counter);
 };
