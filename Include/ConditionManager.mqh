@@ -15,157 +15,108 @@ struct ConditionCounter
 class ConditionManager
 {
     private:
-        void ResetConditions(ConditionCounter &counter);
-        void ConditionFailed(ConditionCounter &counter);
-        void ConditionPassed(ConditionCounter &counter);
+        ConditionCounter conditionCounter;
+        void ConditionFailed();
+        void ConditionPassed();
 
     public:
         ConditionManager();
-
+        void ResetConditions();
+        //TODO rewrite to userinput manager
         bool IsPeak(NumberSeries* numbers);
-        bool IsPeak(NumberSeries* numbers, ConditionCounter &counter);
         bool IsValley(NumberSeries* numbers);  
-        bool IsValley(NumberSeries* numbers, ConditionCounter &counter);  
-        bool CrossUnder(NumberSeries* numbers, uint threshold);
-        bool CrossUnder(NumberSeries* numbers, uint threshold, ConditionCounter &counter);
-        bool CrossOver(NumberSeries* numbers, uint threshold);
-        bool CrossOver(NumberSeries* numbers, uint threshold, ConditionCounter &counter);
-        bool SlopeDown(NumberSeries* numbers);
-        bool SlopeDown(NumberSeries* numbers, ConditionCounter &counter);       
+        bool CrossUnder(NumberSeries* numbers, UserInputManager *userParameters);
+        bool CrossOver(NumberSeries* numbers, UserInputManager *userParameters);
         bool SlopeUp(NumberSeries* numbers);
-        bool SlopeUp(NumberSeries* numbers, ConditionCounter &counter);
-        bool MaxOrdersReached(int maxOrders); //rework, this is dumb
-        bool NoTradeOpen(int magicNumber); //rework or add IsSomeTradeOpen???? this is also dumb
-        bool IsLongTradeOpen(int magicNumber);
-        bool IsLongTradeOpen(int magicNumber, ConditionCounter &counter);
-        bool IsShortTradeOpen(int magicNumber);
-        bool IsShortTradeOpen(int magicNumber, ConditionCounter &counter);
+        bool SlopeDown(NumberSeries* numbers);
+
+        bool MaxOrdersNotReached(UserInputManager *userParameters); //rework, this is dumb
+        bool NoTradeOpen(UserInputManager *userParameters); //rework or add IsSomeTradeOpen???? this is also dumb
+        bool NoLongTradeOpen(UserInputManager *userParameters);
+        bool NoShortTradeOpen(UserInputManager *userParameters);
         //TODO two series numbers crossings
         //TODO IsBeloWLevel(double minDistance, uint minLevelSignificance);
         //TODO IsAboveLevel(double minDistance, uint minLevelSignificance);
-        //TODO
-        bool AllConditionsPassed(ConditionCounter &counter);
-        double PercentageConditionsPassed(ConditionCounter &counter);
+        bool AllConditionsPassed();
+        double PercentageConditionsPassed();
 };
 //======================================================================================
 //=======================DEFINITIONS====================================================
 //======================================================================================
-
-        void ConditionManager::ResetConditions(ConditionCounter &counter)
-        {
-            counter.totalConditions = 0;
-            counter.passedConditions = 0;
-        }
-        void ConditionManager::ConditionFailed(ConditionCounter &counter)
-        {
-            counter.totalConditions++;
-        }
-        void ConditionManager::ConditionPassed(ConditionCounter &counter)
-        {
-            counter.passedConditions++;
-            counter.totalConditions++;
-        }
         ConditionManager::ConditionManager()
         {
+            conditionCounter.passedConditions = 0;
+            conditionCounter.totalConditions = 0;
+        }
+
+
+        void ConditionManager::ResetConditions()
+        {
+            conditionCounter.totalConditions = 0;
+            conditionCounter.passedConditions = 0;
+        }
+        void ConditionManager::ConditionFailed()
+        {
+            conditionCounter.totalConditions++;
+        }
+        void ConditionManager::ConditionPassed()
+        {
+            conditionCounter.passedConditions++;
+            conditionCounter.totalConditions++;
         }
         bool ConditionManager::IsPeak(NumberSeries* numbers)
         {
             numbers.update();
             if((numbers.firstNumber < numbers.secondNumber) && (numbers.secondNumber > numbers.thirdNumber))
             {
+                ConditionPassed();
                 return true;
             }
             else           
             {
+                ConditionFailed();
                 return false;
             }
         }   
-        bool ConditionManager::IsPeak(NumberSeries* numbers, ConditionCounter &counter)
-        {
-            if(IsPeak(numbers) == true)
-            {
-                ConditionPassed(counter);
-                return true;                
-            }
-            else
-            {
-                ConditionFailed(counter);
-                return false;
-            }
-        }
         bool ConditionManager::IsValley(NumberSeries* numbers)
         {
             numbers.update();
             if((numbers.firstNumber > numbers.secondNumber) && (numbers.secondNumber < numbers.thirdNumber))
             {
+                ConditionPassed();
                 return true;
             }
             else           
             {
+                ConditionFailed();
                 return false;
             }
         }  
-        bool ConditionManager::IsValley(NumberSeries* numbers, ConditionCounter &counter)
-        {
-            if(IsValley(numbers) == true)
-            {
-                ConditionPassed(counter);
-                return true;                
-            }
-            else
-            {
-                ConditionFailed(counter);
-                return false;
-            }
-        }
-        bool ConditionManager::CrossUnder(NumberSeries* numbers, uint threshold)
+        bool ConditionManager::CrossUnder(NumberSeries* numbers, UserInputManager *userParameters)
         {
             numbers.update();
-            if(numbers.secondNumber > threshold &&  numbers.thirdNumber < threshold )
+            if(numbers.secondNumber > userParameters.threshold &&  numbers.thirdNumber < userParameters.threshold )
             {
+                ConditionPassed();
                 return true;
             }
             else           
             {
+                ConditionFailed();
                 return false;
             }
         }
-        bool ConditionManager::CrossUnder(NumberSeries* numbers, uint threshold, ConditionCounter &counter)
+        bool ConditionManager::CrossOver(NumberSeries* numbers, UserInputManager *userParameters)
         {
             numbers.update();
-            if(CrossUnder(numbers, threshold) == true)
+            if(numbers.secondNumber < userParameters.threshold &&  numbers.thirdNumber > userParameters.threshold )
             {
-                ConditionPassed(counter);
-                return true;                
-            }
-            else
-            {
-                ConditionFailed(counter);
-                return false;
-            }
-        }
-        bool ConditionManager::CrossOver(NumberSeries* numbers, uint threshold)
-        {
-            numbers.update();
-            if(numbers.secondNumber < threshold &&  numbers.thirdNumber > threshold )
-            {
+                ConditionPassed();
                 return true;
             }
             else           
             {
-                return false;
-            }
-        }
-        bool ConditionManager::CrossOver(NumberSeries* numbers, uint threshold, ConditionCounter &counter)
-        {
-            if(CrossOver(numbers, threshold) == true)
-            {
-                ConditionPassed(counter);
-                return true;                
-            }
-            else
-            {
-                ConditionFailed(counter);
+                ConditionFailed();
                 return false;
             }
         }
@@ -174,23 +125,12 @@ class ConditionManager
             numbers.update();
             if(numbers.firstNumber < numbers.secondNumber &&  numbers.secondNumber < numbers.thirdNumber )
             {
+                ConditionPassed();
                 return true;
             }
             else           
             {
-                return false;
-            }
-        }
-        bool ConditionManager::SlopeDown(NumberSeries* numbers, ConditionCounter &counter)
-        {
-            if(SlopeDown(numbers) == true)
-            {
-                ConditionPassed(counter);
-                return true;                
-            }
-            else
-            {
-                ConditionFailed(counter);
+                ConditionFailed();
                 return false;
             }
         }
@@ -199,34 +139,23 @@ class ConditionManager
             numbers.update();
             if(numbers.firstNumber > numbers.secondNumber &&  numbers.secondNumber > numbers.thirdNumber )
             {    
+                ConditionPassed();
                 return true;
             }
             else
             {
+                ConditionFailed();
                 return false;
             }
         }
-        bool ConditionManager::SlopeUp(NumberSeries* numbers, ConditionCounter &counter)
-        {
-            if(SlopeUp(numbers) == true)
-            {
-                ConditionPassed(counter);
-                return true;                
-            }
-            else
-            {
-                ConditionFailed(counter);
-                return false;
-            }
-        }
-        bool ConditionManager::NoTradeOpen(int magicNumber)
+        bool ConditionManager::NoTradeOpen(UserInputManager *userParameters)
         {
             int openOrders = OrdersTotal();
             for(int i = 0; i < openOrders; i++)
             {
                 if(OrderSelect(i,SELECT_BY_POS)==true)
                 {
-                    if(OrderMagicNumber() == magicNumber) 
+                    if(OrderMagicNumber() == userParameters.magicNumber) 
                     {
                         return false;
                     }  
@@ -234,95 +163,76 @@ class ConditionManager
             }
             return true;
         }
-        bool ConditionManager::AllConditionsPassed(ConditionCounter &counter)
+        bool ConditionManager::AllConditionsPassed()
         {
-            Print("Passed conditions: " + string(counter.passedConditions) + " Total conditions: " + string(counter.totalConditions));
-            if(counter.passedConditions == counter.totalConditions && counter.totalConditions != 0)
+            Print("Passed conditions: " + string(conditionCounter.passedConditions) + " Total conditions: " + string(conditionCounter.totalConditions));
+            if(conditionCounter.passedConditions == conditionCounter.totalConditions && conditionCounter.totalConditions != 0)
             {
-                ResetConditions(counter);
+                ResetConditions();
                 return true;
             }
             else
             {
-                ResetConditions(counter);
+                ResetConditions();
                 return false;
             } 
         }
-        double ConditionManager::PercentageConditionsPassed(ConditionCounter &counter)
+        double ConditionManager::PercentageConditionsPassed()
         {
-            if(counter.totalConditions != 0 && counter.passedConditions != 0)
+            if(conditionCounter.totalConditions != 0 && conditionCounter.passedConditions != 0)
             {
-                double percentage = counter.passedConditions / counter.totalConditions;
-                counter.totalConditions = 0;
-                counter.passedConditions = 0;
+                double percentage = conditionCounter.passedConditions / conditionCounter.totalConditions;
+                conditionCounter.totalConditions = 0;
+                conditionCounter.passedConditions = 0;
                 return percentage;
             }    
             else 
                 return 0;
         }
-        bool ConditionManager::IsLongTradeOpen(int magicNumber)
+        bool ConditionManager::NoLongTradeOpen(UserInputManager *userParameters)
         {
             int openOrders = OrdersTotal();
             for(int i = 0; i < openOrders; i++)
             {
                 if(OrderSelect(i,SELECT_BY_POS)==true)
                 {
-                    if(OrderMagicNumber() == magicNumber && OrderType() == 0) 
+                    if(OrderMagicNumber() == userParameters.magicNumber && OrderType() == 0) 
                     {
+                        ConditionPassed();
                         return true;
                     }  
                 }
             }
+            ConditionFailed();
             return false;
         }
-        bool ConditionManager::IsLongTradeOpen(int magicNumber, ConditionCounter &counter)
-        {
-            if(IsLongTradeOpen(magicNumber) == true)
-            {
-                ConditionPassed(counter);
-                return true;
-            }
-            else
-            {
-                ConditionFailed(counter);
-                return false;
-            }
-        }
-        bool ConditionManager::IsShortTradeOpen(int magicNumber)
+        bool ConditionManager::NoShortTradeOpen(UserInputManager *userParameters)
         {
             int openOrders = OrdersTotal();
             for(int i = 0; i < openOrders; i++)
             {
                 if(OrderSelect(i,SELECT_BY_POS)==true)
                 {
-                    if(OrderMagicNumber() == magicNumber && OrderType() == 1) 
+                    if(OrderMagicNumber() == userParameters.magicNumber && OrderType() == 1) 
                     {
+                        ConditionPassed();
                         return true;
                     }  
                 }
             }
+            ConditionFailed();
             return false;
         }
-        bool ConditionManager::IsShortTradeOpen(int magicNumber, ConditionCounter &counter)
+        bool ConditionManager::MaxOrdersNotReached(UserInputManager *userParameters)
         {
-            if(IsShortTradeOpen(magicNumber) == true)
+            if(OrdersTotal() < userParameters.maxOpenTrades)
             {
-                ConditionPassed(counter);
+                ConditionPassed();
                 return true;
             }
             else
             {
-                ConditionFailed(counter);
+                ConditionFailed();
                 return false;
             }
-        }
-        bool ConditionManager::MaxOrdersReached(int maxOrders)
-        {
-            if(OrdersTotal() < maxOrders)
-            {
-                
-                return false;
-            }
-            else
-                return true;
         }

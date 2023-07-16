@@ -11,54 +11,45 @@
     
 class TradeStation
 {
-    private:
+    public:
         TradeManager* tradeManager;
         ConditionManager* conditionManager;
-        NumberSeries* numberSeries;
+        NumberSeries* numberSeries; //virtual class used only for pointer
+        UserInputManager *parameters;
+        //OPTIONAL
         SimpleMA* simpleMA;       
 
-    public:
-
-        TradeStation(const UserInputManager *userInputManager)
-        {
-            tradeManager = new TradeManager(userInputManager);
-            conditionManager = new ConditionManager();
-            numberSeries = new NumberSeries();
-            
-            //OPTIONAL
-            simpleMA = new SimpleMA(userInputManager);
-        }
-        ~TradeStation()
-        {
-            delete tradeManager;
-            delete conditionManager;
-            delete numberSeries;
-            delete simpleMA;
-
-        }
-        void DoSomething()
-        {
-
-            ConditionCounter conditionCounter;
-            conditionCounter.totalConditions = 0;
-            conditionCounter.passedConditions = 0;
-            numberSeries = simpleMA;
-            
-            //OPEN LONG TRADES LOGIC
-            conditionManager.SlopeUp(simpleMA, conditionCounter);
-            // Print("long condition checked");
-            if(conditionManager.AllConditionsPassed(conditionCounter))
-            {
-                tradeManager.OpenLongTrade();
-            }
-
-            //OPEN SHORT TRADES LOGIC
-            conditionManager.SlopeDown(simpleMA, conditionCounter);
-            // Print("short condition checked");
-            if(conditionManager.AllConditionsPassed(conditionCounter))
-            {
-                tradeManager.OpenShortTrade();
-            }    
-
-        }
+        //METHODS
+        TradeStation(UserInputManager *userParameters);
+        ~TradeStation();
+        void Tester();
 };
+
+TradeStation::TradeStation(UserInputManager *userParameters)
+{
+    tradeManager = new TradeManager(userParameters);
+    conditionManager = new ConditionManager();
+    
+    //OPTIONAL
+    simpleMA = new SimpleMA(userParameters);
+}
+TradeStation::~TradeStation()
+{
+    delete tradeManager;
+    delete conditionManager;
+    delete simpleMA;
+}
+void TradeStation::Tester()
+{
+    numberSeries = simpleMA;
+    
+    //OPEN LONG TRADES LOGIC
+    conditionManager.IsValley(simpleMA);
+    bool tradeLong = conditionManager.AllConditionsPassed();
+    tradeManager.OpenLongTrade(tradeLong);
+
+    //OPEN SHORT TRADES LOGIC
+    conditionManager.IsPeak(simpleMA);
+    bool tradeShort = conditionManager.AllConditionsPassed();
+    tradeManager.OpenShortTrade(tradeShort);
+}

@@ -15,19 +15,19 @@ class TradeManager
 
     private:
         int tradeID;
-        UserInputManager parameters;
+        UserInputManager *parameters;
 
     public:
         //constructor
-        TradeManager(const UserInputManager *userInputManager);
+        TradeManager(UserInputManager *userParameters);
+
         void CalculateStopLoss();
         void SetRRR(double rrr);
         double GetLongATRStopLossPrice(double currentAtr, double entryPrice);
         double GetShortATRStopLossPrice(double currentAtr, double entryPrice);
-        void OpenLongTrade();
-        void OpenShortTrade();
+        void OpenLongTrade(bool allowed);
+        void OpenShortTrade(bool allowed);
         void CloseAllOpenTrades();
-
         //void closeLastTrade();
 };
 
@@ -35,9 +35,9 @@ class TradeManager
 //=======================DEFINITIONS====================================================
 //======================================================================================
 
-        TradeManager::TradeManager(const UserInputManager *userInputManager) 
+        TradeManager::TradeManager(UserInputManager *userParameters) 
         {
-            parameters = userInputManager;
+            parameters = userParameters;
         }
         void TradeManager::SetRRR(double rrr)
         {
@@ -48,13 +48,6 @@ class TradeManager
         {
             
         }
-        void  TradeManager::OpenShortTrade()
-        {
-            double atr = iATR(NULL,NULL, parameters.baseATR, 0);
-            double stopLossPrice = NormalizeDouble(GetShortATRStopLossPrice(parameters.atrSLMultiplier*atr, Bid), Digits);
-            double profitPrice = NormalizeDouble(GetLongATRStopLossPrice(parameters.atrSLMultiplier*atr, Bid), Digits);
-            tradeID = OrderSend(NULL, OP_SELL, 0.01, Bid, 10, stopLossPrice, profitPrice, "Short trade", parameters.magicNumber, 0, 0);
-        }
         double TradeManager::GetLongATRStopLossPrice(double currentAtr, double entryPrice)
         {
             return entryPrice - currentAtr;
@@ -63,12 +56,26 @@ class TradeManager
         {
             return entryPrice + currentAtr;
         } 
-        void TradeManager::OpenLongTrade()
+        //maybe do those two ambigously (if thats the word) i mean do one switchable function for both 
+        void  TradeManager::OpenShortTrade(bool allowed)
         {
-            double atr = iATR(NULL,NULL,100,0);
-            double stopLossPrice = NormalizeDouble(GetLongATRStopLossPrice(parameters.atrSLMultiplier*atr, Ask), Digits);
-            double profitPrice = NormalizeDouble(GetShortATRStopLossPrice(parameters.atrSLMultiplier*atr, Ask), Digits);
-            tradeID = OrderSend(NULL, OP_BUY, 0.01, Ask, 10, stopLossPrice, profitPrice, "Long trade", parameters.magicNumber, 0, 0);
+            if(allowed)
+            {
+                double atr = iATR(NULL,NULL, parameters.baseATR, 0);
+                double stopLossPrice = NormalizeDouble(GetShortATRStopLossPrice(parameters.atrSLMultiplier*atr, Bid), Digits);
+                double profitPrice = NormalizeDouble(GetLongATRStopLossPrice(parameters.atrSLMultiplier * atr * parameters.rewardRiskRatio, Bid), Digits);
+                tradeID = OrderSend(NULL, OP_SELL, 0.01, Bid, 10, stopLossPrice, profitPrice, "Short trade", parameters.magicNumber, 0, 0);
+            }
+        }
+        void TradeManager::OpenLongTrade(bool allowed)
+        {
+            if(allowed)
+            {
+                double atr = iATR(NULL,NULL,100,0);
+                double stopLossPrice = NormalizeDouble(GetLongATRStopLossPrice(parameters.atrSLMultiplier*atr, Ask), Digits);
+                double profitPrice = NormalizeDouble(GetShortATRStopLossPrice(parameters.atrSLMultiplier*atr*parameters.rewardRiskRatio, Ask), Digits);
+                tradeID = OrderSend(NULL, OP_BUY, 0.01, Ask, 10, stopLossPrice, profitPrice, "Long trade", parameters.magicNumber, 0, 0);
+            }
         }
         void TradeManager::CloseAllOpenTrades()
         {
