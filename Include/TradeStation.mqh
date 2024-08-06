@@ -22,6 +22,8 @@ class TradeStation
         //METHODS
         TradeStation(UserInputManager *userParameters);
         ~TradeStation();
+        void OpenTradeLogic();
+        void CloseTradeLogic();
         void Tester();
 };
 
@@ -41,15 +43,24 @@ TradeStation::~TradeStation()
 }
 void TradeStation::Tester()
 {
+}
+void TradeStation::OpenTradeLogic()
+{
     numberSeries = simpleMA;
     
     //OPEN LONG TRADES LOGIC
     conditionManager.IsValley(simpleMA);
+    conditionManager.MaxOrdersNotReached(parameters);
     bool tradeLong = conditionManager.AllConditionsPassed();
     tradeManager.OpenLongTrade(tradeLong);
 
     //OPEN SHORT TRADES LOGIC
     conditionManager.IsPeak(simpleMA);
+    conditionManager.MaxOrdersNotReached(parameters);
     bool tradeShort = conditionManager.AllConditionsPassed();
     tradeManager.OpenShortTrade(tradeShort);
+}
+void TradeStation::CloseTradeLogic()
+{
+
 }

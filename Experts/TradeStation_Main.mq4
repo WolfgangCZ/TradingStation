@@ -50,11 +50,8 @@ int OnInit()
 
 void OnTick()
 {  
-    tradeStation.Tester();
-    
-    
-    //something like this??
-    //tradeStation.OpenTradeLogic();
+    //tradeStation.Tester();
+    tradeStation.OpenTradeLogic();
     //tradeStaton.CloseTradeLogic();
 }
 

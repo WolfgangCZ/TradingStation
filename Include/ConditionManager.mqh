@@ -31,9 +31,13 @@ class ConditionManager
         bool SlopeDown(NumberSeries* numbers);
 
         bool MaxOrdersNotReached(UserInputManager *userParameters); //rework, this is dumb
+        bool MaxOrdersReached(UserInputManager *userParameters);
         bool NoTradeOpen(UserInputManager *userParameters); //rework or add IsSomeTradeOpen???? this is also dumb
         bool NoLongTradeOpen(UserInputManager *userParameters);
         bool NoShortTradeOpen(UserInputManager *userParameters);
+        bool IsLongTradeOpen(UserInputManager *userParameters);
+        bool IsShortTradeOpen(UserInputManager *userParameters);
+
         //TODO two series numbers crossings
         //TODO IsBeloWLevel(double minDistance, uint minLevelSignificance);
         //TODO IsAboveLevel(double minDistance, uint minLevelSignificance);
@@ -198,15 +202,32 @@ class ConditionManager
                 {
                     if(OrderMagicNumber() == userParameters.magicNumber && OrderType() == 0) 
                     {
-                        ConditionPassed();
-                        return true;
+                        ConditionFailed();
+                        return false;
                     }  
                 }
             }
-            ConditionFailed();
-            return false;
+            ConditionPassed();
+            return true;
         }
         bool ConditionManager::NoShortTradeOpen(UserInputManager *userParameters)
+        {
+            int openOrders = OrdersTotal();
+            for(int i = 0; i < openOrders; i++)
+            {
+                if(OrderSelect(i,SELECT_BY_POS)==true)
+                {
+                    if(OrderMagicNumber() == userParameters.magicNumber && OrderType() == 1) 
+                    {
+                        ConditionFailed();
+                        return false;
+                    }  
+                }
+            }
+            ConditionPassed();
+            return true;
+        }
+        bool ConditionManager::IsShortTradeOpen(UserInputManager *userParameters)
         {
             int openOrders = OrdersTotal();
             for(int i = 0; i < openOrders; i++)
@@ -223,6 +244,24 @@ class ConditionManager
             ConditionFailed();
             return false;
         }
+        bool ConditionManager::IsLongTradeOpen(UserInputManager *userParameters)
+        {
+            int openOrders = OrdersTotal();
+            for(int i = 0; i < openOrders; i++)
+            {
+                if(OrderSelect(i,SELECT_BY_POS)==true)
+                {
+                    if(OrderMagicNumber() == userParameters.magicNumber && OrderType() == 0) 
+                    {
+                        ConditionPassed();
+                        return true;
+                    }  
+                }
+            }
+            ConditionFailed();
+            return false;
+        }
+
         bool ConditionManager::MaxOrdersNotReached(UserInputManager *userParameters)
         {
             if(OrdersTotal() < userParameters.maxOpenTrades)
@@ -236,3 +275,17 @@ class ConditionManager
                 return false;
             }
         }
+        bool ConditionManager::MaxOrdersReached(UserInputManager *userParameters)
+        {
+            if(OrdersTotal() < userParameters.maxOpenTrades)
+            {
+                ConditionFailed();
+                return false;
+            }
+            else
+            {
+                ConditionPassed();
+                return true;
+            }
+        }
+
