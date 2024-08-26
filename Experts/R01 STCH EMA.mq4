@@ -16,7 +16,7 @@
 #include <TriggerFunctions.mqh>
 
 input double riskPerTrade = 0.01;
-input double riskReward = 1;
+input double risk_reward = 1;
 input uint stochaThreshold = 20;
 
 
@@ -28,13 +28,13 @@ input uint stochaPeriod = 5;
 
 datetime LastActionTime = 0;
 
-double testLotSize = 0.01;
+double test_lot_size = 0.01;
 
 
 float fastEmaMultiplier = 0.5;
 
 int orderID;
-int magicNumber = 1;
+int magic_number = 1;
 
 int OnInit()
   {
@@ -56,7 +56,7 @@ void OnTick()
    double stocha3 = iStochastic(NULL, NULL, stochaPeriod, 3, 3, 1, 0, 0, 3);
    
    //trading only first tick of a candle and only 1 trade at a time
-   if (LastActionTime != Time[0] && !CheckIfOpenOrdersByMagicNB(magicNumber))
+   if (LastActionTime != Time[0] && !CheckIfOpenOrdersByMagicNB(magic_number))
    {
       //SHORT TRADE
       if(
@@ -68,9 +68,9 @@ void OnTick()
       )
       {               
          double stopLossPrice = NormalizeDouble(GetShortATRStopLossPrice(currentATR*stopLossATRMultiplier, Bid),Digits);
-         double takeProfitPrice = NormalizeDouble(Bid - (stopLossPrice - Bid)*riskReward, Digits);
+         double takeProfitPrice = NormalizeDouble(Bid - (stopLossPrice - Bid)*risk_reward, Digits);
          double lotSize = OptimalLotSize(riskPerTrade,Bid, stopLossPrice);
-         orderID = OrderSend(NULL, OP_SELL, lotSize, Bid, 10, stopLossPrice, takeProfitPrice, NULL, magicNumber);
+         orderID = OrderSend(NULL, OP_SELL, lotSize, Bid, 10, stopLossPrice, takeProfitPrice, NULL, magic_number);
       }
       //LONG TRADE
       if(
@@ -82,9 +82,9 @@ void OnTick()
       )
       {
          double stopLossPrice = NormalizeDouble(GetLongATRStopLossPrice(currentATR*stopLossATRMultiplier, Ask),Digits);
-         double takeProfitPrice = NormalizeDouble(Ask + (Ask - stopLossPrice)*riskReward, Digits);
+         double takeProfitPrice = NormalizeDouble(Ask + (Ask - stopLossPrice)*risk_reward, Digits);
          double lotSize = OptimalLotSize(riskPerTrade,Ask, stopLossPrice);
-         orderID = OrderSend(NULL, OP_BUY, lotSize, Ask, 10, stopLossPrice, takeProfitPrice, NULL, magicNumber);
+         orderID = OrderSend(NULL, OP_BUY, lotSize, Ask, 10, stopLossPrice, takeProfitPrice, NULL, magic_number);
       }
    }
 }

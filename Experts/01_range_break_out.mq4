@@ -8,13 +8,13 @@
 #include <MarketFunctions.mqh>
 #include <TriggerFunctions.mqh>
 
-input int numberCandlesLookback = 5;
-input double lastCandleRatio = 4;
-input bool isLastCandleCompleted = false;
-input double riskReward = 1;
-input double atrMultiplier = 1;
-input int atrPeriod = 4;
-input double maxRisk = 0.01;
+input int candles_lookback = 5;
+input double last_candle_ratio = 4;
+input bool is_last_candle_complete = false;
+input double risk_reward = 1;
+input double atr_multiplier = 1;
+input int atr_period = 4;
+input double max_risk = 0.01;
 
 input int print_candles = 100;
 input int checkpoint_1 = 3;
@@ -25,23 +25,25 @@ input int checkpoint_5 = 48;
 input int checkpoint_6 = 72;
 input double sl_last_candle_ratio = 1;
 
-int shortOrderID = 0;
-int longOrderID = 0;
-bool isShortOpen = false;
-bool isLongOpen = false;
-double testLotSize = 0.01;
-int magicNumber = 1;
+int short_order_id = 0;
+int long_order_id = 0;
+bool is_short_open = false;
+bool is_long_open = false;
+double test_lot_size = 0.01;
+int magic_number = 1;
 
-datetime lastActionTime = 0;
-string fileName = string(Symbol() + "_" + EnumToString(ENUM_TIMEFRAMES(_Period)) + "_pricedata.csv");
-string subFolder = "history";
+datetime last_action_time = 0;
+string file_name = string(Symbol() + "_" + EnumToString(ENUM_TIMEFRAMES(_Period)) + "_pricedata.csv");
+string sub_folder = "history";
+int trade_stop = 5;
+int stop_counter = 0;
 
 int fileHandle;
 
 int OnInit()
 {
-    Print("Path to a file: " + TerminalInfoString(TERMINAL_DATA_PATH) + "\\files\\" + subFolder + "\\" + fileName);
-    fileHandle = FileOpen(subFolder + "\\" + fileName, FILE_WRITE|FILE_CSV);
+    Print("Path to a file: " + TerminalInfoString(TERMINAL_DATA_PATH) + "\\files\\" + sub_folder + "\\" + file_name);
+    fileHandle = FileOpen(sub_folder + "\\" + file_name, FILE_WRITE|FILE_CSV);
     if(fileHandle!=INVALID_HANDLE)
     {
         string header = "Date Time Type"
@@ -71,17 +73,26 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
-    double currentATR = iATR(NULL, NULL, atrPeriod, 0);
-    if (!CheckIfOpenOrdersByMagicNB(magicNumber))
+
+    if (last_action_time == Time[0] && stop_counter > 0)
     {
+        stop_counter -= 1;
+    }
+
+    if (stop_counter == 0)
+    {
+        double currentATR = iATR(NULL, NULL, atr_period, 0);
         // long
         // wtf
-        if(RangeBreakOut(numberCandlesLookback, lastCandleRatio, isLastCandleCompleted) == 1)
+        if(RangeBreakOut(candles_lookback, last_candle_ratio, is_last_candle_complete) == 1)
         {
-            double stopLossPrice = NormalizeDouble(GetLongATRStopLossPrice(currentATR*atrMultiplier, Ask),Digits);
-            double takeProfitPrice = NormalizeDouble(Ask + (Ask - stopLossPrice)*riskReward, Digits);
-            double lotSize = OptimalLotSize(maxRisk, Ask, stopLossPrice);
-            longOrderID = OrderSend(NULL, OP_BUY, lotSize, Ask, 10, stopLossPrice, takeProfitPrice, NULL, magicNumber);
+            double stopLossPrice = NormalizeDouble(GetLongATRStopLossPrice(currentATR*atr_multiplier, Ask),Digits);
+            double takeProfitPrice = NormalizeDouble(Ask + (Ask - stopLossPrice)*risk_reward, Digits);
+            double lotSize = OptimalLotSize(max_risk, Ask, stopLossPrice);
+            long_order_id = OrderSend(NULL, OP_BUY, lotSize, Ask, 10, stopLossPrice, takeProfitPrice, NULL, magic_number);
+            stop_counter = trade_stop;
+            
+
             // if (lastActionTime != Time[0])
             // {
             //     if(fileHandle!=INVALID_HANDLE)
@@ -92,12 +103,13 @@ void OnTick()
             // }
         }
         // short
-        if(RangeBreakOut(numberCandlesLookback, lastCandleRatio, isLastCandleCompleted) == -1)
+        if(RangeBreakOut(candles_lookback, last_candle_ratio, is_last_candle_complete) == -1)
         {
-            double stopLossPrice = NormalizeDouble(GetShortATRStopLossPrice(currentATR*atrMultiplier, Bid),Digits);
-            double takeProfitPrice = NormalizeDouble(Bid - (stopLossPrice - Bid)*riskReward, Digits);
-            double lotSize = OptimalLotSize(maxRisk, Bid, stopLossPrice);
-            shortOrderID = OrderSend(NULL, OP_SELL, lotSize, Bid, 10, stopLossPrice, takeProfitPrice, NULL, magicNumber);
+            double stopLossPrice = NormalizeDouble(GetShortATRStopLossPrice(currentATR*atr_multiplier, Bid),Digits);
+            double takeProfitPrice = NormalizeDouble(Bid - (stopLossPrice - Bid)*risk_reward, Digits);
+            double lotSize = OptimalLotSize(max_risk, Bid, stopLossPrice);
+            short_order_id = OrderSend(NULL, OP_SELL, lotSize, Bid, 10, stopLossPrice, takeProfitPrice, NULL, magic_number);
+            stop_counter = trade_stop;
         }
     }
 }

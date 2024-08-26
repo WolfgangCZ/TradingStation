@@ -20,20 +20,20 @@ input uint emaPeriod = 100;
 input uint fastStochaPeriod = 5;
 input uint slowStochaPeriod = 20;
 
-double testLotSize = 0.01;
+double test_lot_size = 0.01;
 
 
 uint fastStochaThreshold = 20;
 uint slowStochaThreshold = 20;
 
-bool isLongOpen = false;
-bool isShortOpen = false;
+bool is_long_open = false;
+bool is_short_open = false;
 
-int shortOrderID = 0;
-int longOrderID = 0;
+int short_order_id = 0;
+int long_order_id = 0;
 
 int orderID = 0;
-int magicNumber = 1;
+int magic_number = 1;
 
 int OnInit()
 {/*
@@ -95,37 +95,37 @@ void OnTick()
    {
       //openOrderID = OrderSend(NULL,OP_SELLLIMIT,lotSize,Bid,10,stopLossPrice,takeProfitPrice,NULL,magicNB);
       
-      if(shortOrderID != 0)
+      if(short_order_id != 0)
       {
-         bool lastOrderSelected = OrderSelect(shortOrderID, SELECT_BY_TICKET, MODE_TRADES);
-         bool lastOrderClosed = OrderClose(shortOrderID, OrderLots(), Ask, 10);
+         bool lastOrderSelected = OrderSelect(short_order_id, SELECT_BY_TICKET, MODE_TRADES);
+         bool lastOrderClosed = OrderClose(short_order_id, OrderLots(), Ask, 10);
          Print("last order was selected: " + lastOrderSelected + ", last order was closed: " + lastOrderClosed);
-         isShortOpen = false;
-         shortOrderID = 0;
+         is_short_open = false;
+         short_order_id = 0;
       }
-      if(isLongOpen == false)
+      if(is_long_open == false)
          {
          double stopLossPrice = NormalizeDouble(GetLongATRStopLossPrice(currentATR*stopLossATRMultiplier, Ask),Digits);
-         longOrderID = OrderSend(NULL, OP_BUY, testLotSize, Ask, 10, NULL, NULL, NULL, magicNumber);
-         isLongOpen = true;
+         long_order_id = OrderSend(NULL, OP_BUY, test_lot_size, Ask, 10, NULL, NULL, NULL, magic_number);
+         is_long_open = true;
          }
       }
       
    if(IsPeak(ema3, ema2, ema1))
    {
-      if(longOrderID != 0)
+      if(long_order_id != 0)
       {
-         bool lastOrderSelected = OrderSelect(longOrderID, SELECT_BY_TICKET, MODE_TRADES);
-         bool lastOrderClosed = OrderClose(longOrderID, OrderLots(), Bid, 10);
+         bool lastOrderSelected = OrderSelect(long_order_id, SELECT_BY_TICKET, MODE_TRADES);
+         bool lastOrderClosed = OrderClose(long_order_id, OrderLots(), Bid, 10);
          Print("last order was selected: " + lastOrderSelected + ", last order was closed: " + lastOrderClosed);
-         isLongOpen = false;
-         longOrderID = 0;
+         is_long_open = false;
+         long_order_id = 0;
       }
-      if(isShortOpen == false)
+      if(is_short_open == false)
       {
          double stopLossPrice = NormalizeDouble(GetShortATRStopLossPrice(currentATR*stopLossATRMultiplier, Bid),Digits);
-         shortOrderID = OrderSend(NULL, OP_SELL, testLotSize, Bid, 10, NULL, NULL, NULL, magicNumber);
-         isShortOpen = true;
+         short_order_id = OrderSend(NULL, OP_SELL, test_lot_size, Bid, 10, NULL, NULL, NULL, magic_number);
+         is_short_open = true;
          
       }
    }

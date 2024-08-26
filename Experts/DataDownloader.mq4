@@ -7,15 +7,15 @@
 //download all OHLC, time and volume data to CSV
 
 datetime lastActionTime = 0;
-string fileName = string(Symbol() + "_" + EnumToString(ENUM_TIMEFRAMES(_Period)) + "_pricedata.csv");
-string subFolder = "history";
+string file_name = string(Symbol() + "_" + EnumToString(ENUM_TIMEFRAMES(_Period)) + "_pricedata.csv");
+string sub_folder = "history";
 
 int fileHandle;
 
 int OnInit()
 {
-    Print("Path to a file: " + TerminalInfoString(TERMINAL_DATA_PATH) + "\\files\\" + subFolder + "\\" + fileName);
-    fileHandle = FileOpen(subFolder + "\\" + fileName, FILE_WRITE|FILE_CSV);
+    Print("Path to a file: " + TerminalInfoString(TERMINAL_DATA_PATH) + "\\files\\" + sub_folder + "\\" + file_name);
+    fileHandle = FileOpen(sub_folder + "\\" + file_name, FILE_WRITE|FILE_CSV);
     if(fileHandle!=INVALID_HANDLE)
     {
         FileWrite(fileHandle,"Date, Time, Open, High, Low, Close, Volume");
