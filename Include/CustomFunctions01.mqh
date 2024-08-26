@@ -126,7 +126,7 @@ bool IsTradingAllowed()
 }
   
   
-double asfk(double maxRiskPrc, int maxLossInPips)
+double OptimalLotSize(double maxRiskPrc, int maxLossInPips)
 {
 
   double accEquity = AccountEquity();
@@ -160,7 +160,7 @@ double asfk(double maxRiskPrc, int maxLossInPips)
 double OptimalLotSize(double maxRiskPrc, double entryPrice, double stopLoss)
 {
    int maxLossInPips = MathAbs(entryPrice - stopLoss)/GetPipValue();
-   return asfk(maxRiskPrc,maxLossInPips);
+   return OptimalLotSize(maxRiskPrc,maxLossInPips);
 }
 
 

@@ -69,7 +69,7 @@ void OnTick()
          Print("Stop Loss Price = " + stopLossPrice);
          Print("Take Profit Price = " + takeProfitPrice);
          
-         double lotSize = asfk(riskPerTrade,Ask,stopLossPrice);
+         double lotSize = OptimalLotSize(riskPerTrade,Ask,stopLossPrice);
          
          openOrderID = OrderSend(NULL,OP_BUY,lotSize,Ask,10,stopLossPrice,takeProfitPrice,NULL,magicNB);
          if(openOrderID < 0) Alert("order rejected. Order error: " + GetLastError());
@@ -83,7 +83,7 @@ void OnTick()
          Print("Stop Loss Price = " + stopLossPrice);
          Print("Take Profit Price = " + takeProfitPrice);
    	  
-   	  double lotSize = asfk(riskPerTrade,Bid,stopLossPrice);
+   	  double lotSize = OptimalLotSize(riskPerTrade,Bid,stopLossPrice);
 
    	  openOrderID = OrderSend(NULL,OP_SELL,lotSize,Bid,10,stopLossPrice,takeProfitPrice,NULL,magicNB);
    	  if(openOrderID < 0) Alert("order rejected. Order error: " + GetLastError());

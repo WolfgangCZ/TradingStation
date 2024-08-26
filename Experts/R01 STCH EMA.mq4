@@ -69,7 +69,7 @@ void OnTick()
       {               
          double stopLossPrice = NormalizeDouble(GetShortATRStopLossPrice(currentATR*stopLossATRMultiplier, Bid),Digits);
          double takeProfitPrice = NormalizeDouble(Bid - (stopLossPrice - Bid)*riskReward, Digits);
-         double lotSize = asfk(riskPerTrade,Bid, stopLossPrice);
+         double lotSize = OptimalLotSize(riskPerTrade,Bid, stopLossPrice);
          orderID = OrderSend(NULL, OP_SELL, lotSize, Bid, 10, stopLossPrice, takeProfitPrice, NULL, magicNumber);
       }
       //LONG TRADE
@@ -83,7 +83,7 @@ void OnTick()
       {
          double stopLossPrice = NormalizeDouble(GetLongATRStopLossPrice(currentATR*stopLossATRMultiplier, Ask),Digits);
          double takeProfitPrice = NormalizeDouble(Ask + (Ask - stopLossPrice)*riskReward, Digits);
-         double lotSize = asfk(riskPerTrade,Ask, stopLossPrice);
+         double lotSize = OptimalLotSize(riskPerTrade,Ask, stopLossPrice);
          orderID = OrderSend(NULL, OP_BUY, lotSize, Ask, 10, stopLossPrice, takeProfitPrice, NULL, magicNumber);
       }
    }

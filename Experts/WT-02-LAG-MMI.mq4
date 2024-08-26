@@ -29,7 +29,7 @@ datetime LastActionTime = 0;
 
 
 
-bool isLongOpen = false;
+bool IsLongOpen = false;
 bool isShortOpen = false;
 
 int shortOrderID = 0;
@@ -72,13 +72,13 @@ void OnTick()
                isShortOpen = false;
                shortOrderID = 0;
             }
-            if(isLongOpen == false)
+            if(IsLongOpen == false)
                {
                
                double stopLossPrice = NormalizeDouble(GetLongATRStopLossPrice(currentATR*stopLossATRMultiplier, Ask),Digits);
-               double lotSize = asfk(riskPerTrade,Ask, stopLossPrice);
+               double lotSize = OptimalLotSize(riskPerTrade,Ask, stopLossPrice);
                longOrderID = OrderSend(NULL, OP_BUY, lotSize, Ask, 10, stopLossPrice, NULL, NULL, magicNumber);
-               isLongOpen = true;
+               IsLongOpen = true;
                }
             }
             
@@ -89,14 +89,14 @@ void OnTick()
                bool lastOrderSelected = OrderSelect(longOrderID, SELECT_BY_TICKET, MODE_TRADES);
                bool lastOrderClosed = OrderClose(longOrderID, OrderLots(), Bid, 10);
                Print("last order was selected: " + lastOrderSelected + ", last order was closed: " + lastOrderClosed);
-               isLongOpen = false;
+               IsLongOpen = false;
                longOrderID = 0;
             }
             if(isShortOpen == false)
             {
                
                double stopLossPrice = NormalizeDouble(GetShortATRStopLossPrice(currentATR*stopLossATRMultiplier, Bid),Digits);
-               double lotSize = asfk(riskPerTrade,Bid, stopLossPrice);
+               double lotSize = OptimalLotSize(riskPerTrade,Bid, stopLossPrice);
                shortOrderID = OrderSend(NULL, OP_SELL, lotSize, Bid, 10, stopLossPrice, NULL, NULL, magicNumber);
                isShortOpen = true;
                

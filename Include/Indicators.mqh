@@ -41,25 +41,25 @@ double mean(int index, int period)
 
 double iMMI(int candlePos, int period, int smoothingPeriod)
 {
-   
-   int nl, nh;
+   int sumLows, sumHighs;
    double m;
    double mmiSum = 0;
-         
-      for(int j = candlePos; j < candlePos + smoothingPeriod; j++)
-      {  
-        nl = 0;
-        nh = 0;
-        m = mean(j, period);
-        for (int i = j; i < j + period; i++)
-        {
+
+   for(int j = candlePos; j < candlePos + smoothingPeriod; j++)
+   {  
+      
+      sumLows = 0;
+      sumHighs = 0;
+      m = mean(j, period);
+      for (int i = j; i < j + period; i++)
+      {
             if (Open[i] > Close[i])
             {
                if (Open[i] - Close[i] > m)
                {
                   if ((Open[i] - Close[i]) > (Open[i-1] - Close[i-1]))
                   {
-                     nl++;
+                     sumLows++;
                   }
                }
             }
@@ -69,15 +69,15 @@ double iMMI(int candlePos, int period, int smoothingPeriod)
                {
                   if (Close[i] - Open[i] < Close[i-1] - Open[i-1])
                   {
-                     nh++;
+                     sumHighs++;
                   }
                }
             }
          }
-      
-      mmiSum += 100.0 - (100.0 * (nl + nh) / (period));
-      } 
-      return mmiSum / smoothingPeriod;
+   
+   mmiSum += 100.0 - (100.0 * (sumLows + sumHighs) / (period));
+   } 
+   return mmiSum / smoothingPeriod;
 }
 
 //laguerre filter
