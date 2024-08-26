@@ -42,6 +42,7 @@ int fileHandle;
 
 int OnInit()
 {
+    Print("asfasdfasdfsfl;asdfjl;asdjkfl;asdkfj;asldkfj");
     Print("Path to a file: " + TerminalInfoString(TERMINAL_DATA_PATH) + "\\files\\" + sub_folder + "\\" + file_name);
     fileHandle = FileOpen(sub_folder + "\\" + file_name, FILE_WRITE|FILE_CSV);
     if(fileHandle!=INVALID_HANDLE)
