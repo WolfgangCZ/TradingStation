@@ -1,9 +1,10 @@
 
+
 template <typename T>
 void AppendElement(T &arr[], T &element)
 {
     int arrSize = ArraySize(arr);
-    ArrayResize(arr, arrSize + 1);
+    ArrayResize(arr, arrSize + 1, 1000);
     arr[arrSize] = element;
 }
 template <typename T>
@@ -35,7 +36,7 @@ void InsertElement(T &arr[],T &element, int pos)
         Print("Error function InserElement: tried to access array out of bound");
         return;
     }
-    ArrayResize(arr, arrSize+1);
+    ArrayResize(arr, arrSize+1, 1000);
     int newArrSize = ArraySize(arr);
     for (int i = newArrSize - 1; i > pos; i--)
     {

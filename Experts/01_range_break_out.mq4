@@ -31,23 +31,102 @@ bool is_short_open = false;
 bool is_long_open = false;
 double test_lot_size = 0.01;
 int magic_number = 1;
+int ring_index = 0;
 
 datetime last_action_time = 0;
-string file_name = string(Symbol() + "_" + EnumToString(ENUM_TIMEFRAMES(_Period)) + "_pricedata.csv");
+string file_name = "range_breakout.csv";
 string sub_folder = "history";
 int trade_stop = 5;
 int stop_counter = 0;
+const int buffer_size = 200;
 
 int fileHandle;
+bool is_initialized = false;
 
-int OnInit()
+class OpenTrade
+{
+    public:
+        OpenTrade(){}
+        OpenTrade(double stoploss, double entry_price, double target, int ticket_id)
+        {
+            sl = stoploss;
+            entry = entry_price;
+            tp = target;
+            candles_past = print_candles;
+            id = ticket_id;
+            is_closed = false;
+        }
+
+        double check_points[6];
+        double sl;
+        double entry;
+        double tp;
+        double candles_past;
+        bool is_closed;
+        int id;
+};
+
+template <typename T>
+class DArray
+{
+    T array[];
+    int m_length;
+    int m_capacity;
+
+    public:
+        DArray(int length)
+        {
+            resize(m_capacity);
+            m_length = length;
+            m_capacity = length;
+        }
+        int length()
+        {
+            return m_length;
+        }
+        void append(T &object)
+        {
+            m_capacity *= 2 + 1;
+            if (m_length == m_capacity)
+            {
+                resize(m_capacity);
+            }
+            array[m_length] = object;
+            m_length++;
+        }
+        T *operator [](const int index)
+        {
+            return &array[index];
+        }
+        void remove(int index)
+        {
+            if (index < 0 || index >= m_length)
+            {
+                return;
+            }
+            m_length--;
+            for (int i = index; i < m_length; i++)
+            {
+                array[i] = array[i + 1];
+            }
+        }
+    private:
+        void resize(int new_capacity)
+        {
+            ArrayResize(array, new_capacity, 1000);
+        }
+};
+
+DArray<OpenTrade> *open_trades;
+
+int init()
 {
     Print("asfasdfasdfsfl;asdfjl;asdjkfl;asdkfj;asldkfj");
     Print("Path to a file: " + TerminalInfoString(TERMINAL_DATA_PATH) + "\\files\\" + sub_folder + "\\" + file_name);
     fileHandle = FileOpen(sub_folder + "\\" + file_name, FILE_WRITE|FILE_CSV);
     if(fileHandle!=INVALID_HANDLE)
     {
-        string header = "Date Time Type"
+        string header = "Time Type"
             +" Checkpoint+"+string(checkpoint_1)
             +" Checkpoint_"+string(checkpoint_2)
             +" Checkpoint_"+string(checkpoint_3)
@@ -65,19 +144,43 @@ int OnInit()
         FileWrite(fileHandle, header);
     }
     else Print("Operation FileOpen failed, error ",GetLastError());
+
+    open_trades = new DArray<OpenTrade>(buffer_size);
+
     return(INIT_SUCCEEDED);
 }
+
+
+
 void OnDeinit(const int reason)
 {
     FileClose(fileHandle);
 }
 
-void OnTick()
+void process_open_trades(DArray<OpenTrade> *trades)
 {
 
-    if (last_action_time == Time[0] && stop_counter > 0)
+    for (int i = 0; i < trades.length(); i++)
     {
-        stop_counter -= 1;
+        trades[i].candles_past -= 1;
+    }
+}
+
+void OnTick()
+{
+    if (!is_initialized)
+    {
+        init();
+        is_initialized = true;
+    }
+
+    if (last_action_time != Time[0])
+    {
+        if (stop_counter > 0)
+        {
+            stop_counter -= 1;
+        }
+
     }
 
     if (stop_counter == 0)
@@ -92,16 +195,9 @@ void OnTick()
             double lotSize = OptimalLotSize(max_risk, Ask, stopLossPrice);
             long_order_id = OrderSend(NULL, OP_BUY, lotSize, Ask, 10, stopLossPrice, takeProfitPrice, NULL, magic_number);
             stop_counter = trade_stop;
-            
 
-            // if (lastActionTime != Time[0])
-            // {
-            //     if(fileHandle!=INVALID_HANDLE)
-            //     {
-            //         FileWrite(fileHandle, Time[1], Open[1], High[1], Low[1], Close[1], Volume[1]);
-            //     }
-            // else Print("Operation FileOpen failed, error ",GetLastError());
-            // }
+            OpenTrade open_trade = new OpenTrade(stopLossPrice, Ask, takeProfitPrice, long_order_id);
+            open_trades.append(open_trade);
         }
         // short
         if(RangeBreakOut(candles_lookback, last_candle_ratio, is_last_candle_complete) == -1)
@@ -111,6 +207,9 @@ void OnTick()
             double lotSize = OptimalLotSize(max_risk, Bid, stopLossPrice);
             short_order_id = OrderSend(NULL, OP_SELL, lotSize, Bid, 10, stopLossPrice, takeProfitPrice, NULL, magic_number);
             stop_counter = trade_stop;
+
+            OpenTrade open_trade = new OpenTrade(stopLossPrice, Ask, takeProfitPrice, short_order_id);
+            open_trades.append(open_trade);
         }
     }
 }
