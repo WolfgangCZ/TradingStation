@@ -110,7 +110,7 @@ class OpenTrade
     private:
         void print_previous_candles(int candles_to_print)
         {
-            for (int i = 1; i<candles_to_print; i++)
+            for (int i = 0; i<candles_to_print; i++)
             {
                 candle_ohlc += string(High[i]) + " ";
                 candle_ohlc += string(Open[i]) + " ";
@@ -163,22 +163,27 @@ void process_open_trades(OpenTrade &trades[])
     if (ArraySize(trades) == 0) return;
     for (int i = ArraySize(trades) - 1; i >= 0 ; i--)
     {
-        if (!OrderSelect(trades[i].id, SELECT_BY_TICKET, MODE_TRADES))
+        bool is_order_selected = OrderSelect(trades[i].id, SELECT_BY_TICKET, MODE_TRADES);
+        datetime order_close_time = OrderCloseTime();
+        // Print("Is order selected: " + string(is_order_selected));
+        // Print("Order close time: " + string(order_close_time));
+
+        if (is_order_selected && order_close_time != 0)
         {
-            Print("Order is closed, deleting object");
+            // Print("Order is closed, deleting object");
             trades[i].write_down_sl();
             delete &trades[i];
 
             ArrayEraseElement(trades, i);
-            Print("Now its: " + string(ArraySize(trades)));
+            // Print("Now its: " + string(ArraySize(trades)));
         }
         trades[i].candles_past -= 1;
         if (trades[i].candles_past == 0)
         {
-            Print("Order timedout, deleting object");
+            // Print("Order timedout, deleting object");
             delete &trades[i];
             ArrayEraseElement(trades, i);
-            Print("Now its: " + string(ArraySize(trades)));
+            // Print("Now its: " + string(ArraySize(trades)));
         }
         // TODO: process TP levels at checkpoints
     }
