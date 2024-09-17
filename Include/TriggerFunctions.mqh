@@ -44,17 +44,17 @@ int RangeBreakOut(int numCandlesLookback, double breakOutRatio, bool waitToCompl
    }
    double sizeSumAvg = sizeSum / numCandlesLookback;
    double lastCandleSize = Close[offset] - Open[offset];
-   Print("last candle size: " + string(lastCandleSize));
-   Print("size sum avg: " + string(sizeSumAvg*breakOutRatio));
+   // Print("last candle size: " + string(lastCandleSize));
+   // Print("size sum avg: " + string(sizeSumAvg*breakOutRatio));
 
    if (lastCandleSize > breakOutRatio*sizeSumAvg) 
    {
-      Print("=======BUY=======");
+      // Print("=======BUY=======");
       return 1;
    }
    if ((-lastCandleSize) > breakOutRatio*sizeSumAvg)
    {
-      Print("======SELL======");
+      // Print("======SELL======");
       return -1;
    }
    return 0;

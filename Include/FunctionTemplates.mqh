@@ -1,29 +1,29 @@
 
 
 template <typename T>
-void AppendElement(T &arr[], T &element)
+void ArrayAppendElement(T &arr[], T &element)
 {
     int arrSize = ArraySize(arr);
     ArrayResize(arr, arrSize + 1, 1000);
     arr[arrSize] = element;
 }
 template <typename T>
-void EraseElement(T &arr[], int pos)
+void ArrayEraseElement(T &arr[], int pos)
 {
     int arrSize = ArraySize(arr);
-    if(pos > arrSize - 1 || pos < 0) 
+    if(pos >= arrSize || pos < 0) 
     {
         Print("Error function EraseElement: tried to access array out of bound");
         return;
     }
-    for (int i = pos; i < arrSize - pos + 1; i++)
+    for (int i = pos; i < arrSize-1; i++)
     {
         if(arrSize == 1)
             break;
         else
             arr[i] = arr[i+1];
     }
-    ArrayResize(arr, arrSize-1);
+    ArrayResize(arr, arrSize-1, 1000);
 }
 
 template <typename T>

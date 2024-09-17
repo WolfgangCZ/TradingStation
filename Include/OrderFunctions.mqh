@@ -66,7 +66,7 @@ double OptimalLotSize(double maxRiskPrc, int maxLossInPips)
   //Print("maxLossInQuoteCurr: " + maxLossInQuoteCurr);
   
   double optimalLotSize = NormalizeDouble(maxLossInQuoteCurr /(maxLossInPips * GetPipValue())/lotSize,2);
-  Print("lotSize: " + (string)(lotSize));
+//   Print("lotSize: " + (string)(lotSize));
   return optimalLotSize;
 }
 

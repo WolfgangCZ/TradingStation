@@ -87,7 +87,7 @@ void SuppResLevels::UpdateLevelInRange(uint startCandlePos, uint endCandlePos)
             extreme.price = High[i];
             extreme.time = Time[i];        
             Alert("Top found at candle: " + string(extreme.candle) + " with price of: " + string(extreme.price));
-            AppendElement(suppResContainer, extreme);
+            ArrayAppendElement(suppResContainer, extreme);
         }
         if(isMiddleLowest == true)
         {
@@ -98,7 +98,7 @@ void SuppResLevels::UpdateLevelInRange(uint startCandlePos, uint endCandlePos)
             extreme.price = Low[i];
             extreme.time = Time[i];        
             Alert("Bottom found at: " + string(extreme.candle) + " with price of: " + string(extreme.price));
-            AppendElement(suppResContainer, extreme);
+            ArrayAppendElement(suppResContainer, extreme);
         }       
     }
 }

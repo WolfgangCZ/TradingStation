@@ -7,6 +7,7 @@
 #include <OrderFunctions.mqh>
 #include <MarketFunctions.mqh>
 #include <TriggerFunctions.mqh>
+#include <FunctionTemplates.mqh>
 
 input int candles_lookback = 5;
 input double last_candle_ratio = 4;
@@ -16,7 +17,8 @@ input double atr_multiplier = 1;
 input int atr_period = 4;
 input double max_risk = 0.01;
 
-input int print_candles = 100;
+input int print_candles = 3;
+input int candles_timeout = 10;
 input int checkpoint_1 = 3;
 input int checkpoint_2 = 6;
 input int checkpoint_3 = 12;
@@ -34,14 +36,16 @@ int magic_number = 1;
 int ring_index = 0;
 
 datetime last_action_time = 0;
-string file_name = "range_breakout.csv";
-string sub_folder = "history";
+string file_name = "zkouska.csv";
+string sub_folder = "range_breakout";
 int trade_stop = 5;
 int stop_counter = 0;
 const int buffer_size = 200;
 
-int fileHandle;
+int fileHandle = 0;
 bool is_initialized = false;
+
+string file_content = "";
 
 class OpenTrade
 {
@@ -52,11 +56,49 @@ class OpenTrade
             sl = stoploss;
             entry = entry_price;
             tp = target;
-            candles_past = print_candles;
+            candles_past = candles_timeout;
             id = ticket_id;
             is_closed = false;
+            print_previous_candles(print_candles);
+            cp_1 = cp_2 = cp_3 = cp_4 = cp_5 = cp_6 = sl_close = "x";
+            price_movement = string(TimeCurrent()) + " ";
         }
+        ~OpenTrade()
+        {
+            if (sl > tp)
+            {
+                price_movement += string("short ");
+            }
+            else
+            {
+                price_movement += string("ling ");
+            }
+            price_movement += string(cp_1 + " ");
+            price_movement += string(cp_2 + " ");
+            price_movement += string(cp_3 + " ");
+            price_movement += string(cp_4 + " ");
+            price_movement += string(cp_5 + " ");
+            price_movement += string(cp_6 + " ");
+            price_movement += string(sl_close + " ");
 
+            FileWrite(fileHandle, price_movement + candle_ohlc + "\n");
+            Print("To file data written");
+        }
+        void write_down_sl()
+        {
+            price_movement += "x ";
+        }
+        string price_movement;
+
+        string cp_1;
+        string cp_2;
+        string cp_3;
+        string cp_4;
+        string cp_5;
+        string cp_6;
+        string sl_close;
+
+        string candle_ohlc;
         double check_points[6];
         double sl;
         double entry;
@@ -64,75 +106,35 @@ class OpenTrade
         double candles_past;
         bool is_closed;
         int id;
-};
 
-template <typename T>
-class DArray
-{
-    T array[];
-    int m_length;
-    int m_capacity;
-
-    public:
-        DArray(int length)
-        {
-            resize(m_capacity);
-            m_length = length;
-            m_capacity = length;
-        }
-        int length()
-        {
-            return m_length;
-        }
-        void append(T &object)
-        {
-            m_capacity *= 2 + 1;
-            if (m_length == m_capacity)
-            {
-                resize(m_capacity);
-            }
-            array[m_length] = object;
-            m_length++;
-        }
-        T *operator [](const int index)
-        {
-            return &array[index];
-        }
-        void remove(int index)
-        {
-            if (index < 0 || index >= m_length)
-            {
-                return;
-            }
-            m_length--;
-            for (int i = index; i < m_length; i++)
-            {
-                array[i] = array[i + 1];
-            }
-        }
     private:
-        void resize(int new_capacity)
+        void print_previous_candles(int candles_to_print)
         {
-            ArrayResize(array, new_capacity, 1000);
+            for (int i = 1; i<candles_to_print; i++)
+            {
+                candle_ohlc += string(High[i]) + " ";
+                candle_ohlc += string(Open[i]) + " ";
+                candle_ohlc += string(Close[i]) + " ";
+                candle_ohlc += string(Low[i]) + " ";
+            }
         }
 };
 
-DArray<OpenTrade> *open_trades;
+OpenTrade open_trades_buffer [];
 
-int init()
+void init()
 {
-    Print("asfasdfasdfsfl;asdfjl;asdjkfl;asdkfj;asldkfj");
     Print("Path to a file: " + TerminalInfoString(TERMINAL_DATA_PATH) + "\\files\\" + sub_folder + "\\" + file_name);
-    fileHandle = FileOpen(sub_folder + "\\" + file_name, FILE_WRITE|FILE_CSV);
-    if(fileHandle!=INVALID_HANDLE)
+    if (fileHandle == 0)
     {
+        fileHandle = FileOpen(sub_folder + "\\" + file_name, FILE_WRITE|FILE_CSV);
         string header = "Time Type"
-            +" Checkpoint+"+string(checkpoint_1)
-            +" Checkpoint_"+string(checkpoint_2)
-            +" Checkpoint_"+string(checkpoint_3)
-            +" Checkpoint_"+string(checkpoint_4)
-            +" Checkpoint_"+string(checkpoint_5)
-            +" Checkpoint_"+string(checkpoint_6)
+            +" CP_"+string(checkpoint_1)
+            +" CP_"+string(checkpoint_2)
+            +" CP_"+string(checkpoint_3)
+            +" CP_"+string(checkpoint_4)
+            +" CP_"+string(checkpoint_5)
+            +" CP_"+string(checkpoint_6)
             +" SL";
         for(int i = 0; i<print_candles; i++)
         {
@@ -141,30 +143,47 @@ int init()
             header += " Close[" + string(i) + "]";
             header += " High[" + string(i) + "]";
         }
+        header += "\n";
         FileWrite(fileHandle, header);
     }
-    else Print("Operation FileOpen failed, error ",GetLastError());
-
-    open_trades = new DArray<OpenTrade>(buffer_size);
-
-    return(INIT_SUCCEEDED);
+    if(fileHandle==INVALID_HANDLE)
+    {
+        Print("Operation FileOpen failed, error ",GetLastError());
+    } 
 }
-
-
 
 void OnDeinit(const int reason)
 {
+    Print("de init called");
     FileClose(fileHandle);
 }
 
-void process_open_trades(DArray<OpenTrade> *trades)
+void process_open_trades(OpenTrade &trades[])
 {
-
-    for (int i = 0; i < trades.length(); i++)
+    if (ArraySize(trades) == 0) return;
+    for (int i = ArraySize(trades) - 1; i >= 0 ; i--)
     {
+        if (!OrderSelect(trades[i].id, SELECT_BY_TICKET, MODE_TRADES))
+        {
+            Print("Order is closed, deleting object");
+            trades[i].write_down_sl();
+            delete &trades[i];
+
+            ArrayEraseElement(trades, i);
+            Print("Now its: " + string(ArraySize(trades)));
+        }
         trades[i].candles_past -= 1;
+        if (trades[i].candles_past == 0)
+        {
+            Print("Order timedout, deleting object");
+            delete &trades[i];
+            ArrayEraseElement(trades, i);
+            Print("Now its: " + string(ArraySize(trades)));
+        }
+        // TODO: process TP levels at checkpoints
     }
 }
+
 
 void OnTick()
 {
@@ -174,15 +193,14 @@ void OnTick()
         is_initialized = true;
     }
 
-    if (last_action_time != Time[0])
+    if(iTime(NULL, 0, 0) == TimeCurrent())
     {
         if (stop_counter > 0)
         {
             stop_counter -= 1;
         }
-
+        process_open_trades(open_trades_buffer);
     }
-
     if (stop_counter == 0)
     {
         double currentATR = iATR(NULL, NULL, atr_period, 0);
@@ -195,9 +213,13 @@ void OnTick()
             double lotSize = OptimalLotSize(max_risk, Ask, stopLossPrice);
             long_order_id = OrderSend(NULL, OP_BUY, lotSize, Ask, 10, stopLossPrice, takeProfitPrice, NULL, magic_number);
             stop_counter = trade_stop;
-
-            OpenTrade open_trade = new OpenTrade(stopLossPrice, Ask, takeProfitPrice, long_order_id);
-            open_trades.append(open_trade);
+            if (long_order_id > 0)
+            {
+                Print("New order long");
+                OpenTrade *open_trade = new OpenTrade(stopLossPrice, Ask, takeProfitPrice, long_order_id);
+                ArrayAppendElement(open_trades_buffer, *open_trade);
+                Print("open trades: " + string(ArraySize(open_trades_buffer)));
+            }
         }
         // short
         if(RangeBreakOut(candles_lookback, last_candle_ratio, is_last_candle_complete) == -1)
@@ -208,8 +230,14 @@ void OnTick()
             short_order_id = OrderSend(NULL, OP_SELL, lotSize, Bid, 10, stopLossPrice, takeProfitPrice, NULL, magic_number);
             stop_counter = trade_stop;
 
-            OpenTrade open_trade = new OpenTrade(stopLossPrice, Ask, takeProfitPrice, short_order_id);
-            open_trades.append(open_trade);
+            if (short_order_id > 0)
+            {
+                Print("New order short");
+                OpenTrade *open_trade = new OpenTrade(stopLossPrice, Ask, takeProfitPrice, short_order_id);
+                ArrayAppendElement(open_trades_buffer, *open_trade);
+                Print("open trades: " + string(ArraySize(open_trades_buffer)));
+
+            }
         }
     }
 }
